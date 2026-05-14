@@ -98,7 +98,7 @@ void default_cfg(struct cfg *cfg)
 	cfg->grab_device = 1;
 	cfg->kbemu_use_x11 = 0;  /* default to uinput when available */
 
-	for(i=0; i<6; i++) {
+	for(i=0; i<MAX_AXES; i++) {
 		cfg->map_axis[i] = i;
 	}
 
@@ -512,6 +512,8 @@ int write_cfg(const char *fname, struct cfg *cfg)
 
 	if(cfg->sensitivity != def.sensitivity) {
 		add_cfgopt(CFG_SENS, 0, "sensitivity = %.3f", cfg->sensitivity);
+	} else {
+		rm_cfgopt("sensitivity", RMCFG_ALL);
 	}
 
 	if(cfg->sens_trans[0] == cfg->sens_trans[1] && cfg->sens_trans[1] == cfg->sens_trans[2]) {
@@ -633,6 +635,15 @@ int write_cfg(const char *fname, struct cfg *cfg)
 		add_cfgopt(CFG_SWAPYZ, 0, "swap-yz = true");
 	} else {
 		rm_cfgopt("swap-yz", RMCFG_ALL);
+	}
+
+	for(i=0; i<MAX_AXES; i++) {
+		if(cfg->map_axis[i] != i) {
+			add_cfgopt(CFG_AXISMAP_N, i, "axismap%d = %d", i, cfg->map_axis[i]);
+		} else {
+			sprintf(buf, "axismap%d", i);
+			rm_cfgopt(buf, RMCFG_ALL);
+		}
 	}
 
 	for(i=0; i<MAX_BUTTONS; i++) {
